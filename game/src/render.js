@@ -66,6 +66,19 @@ export function createRenderer(canvas) {
 
   function drawWorld(state, level) {
     drawTiles(state, level);
+    // Moonlight from the top-left corner, and fireflies that drift over
+    // the orchard (fixed positions, pulsing with time, so shots are stable).
+    const moon = ctx.createRadialGradient(80, 60, 10, 80, 60, 420);
+    moon.addColorStop(0, 'rgba(190, 210, 255, 0.10)');
+    moon.addColorStop(1, 'rgba(190, 210, 255, 0)');
+    ctx.fillStyle = moon;
+    ctx.fillRect(0, 0, FIELD.width, FIELD.height);
+    const flies = [[120, 300], [260, 140], [420, 420], [560, 200], [700, 360], [180, 560], [480, 600], [760, 140], [340, 260], [620, 520]];
+    for (let i = 0; i < flies.length; i += 1) {
+      const a = 0.25 + 0.25 * Math.sin(state.elapsed * 1.6 + i * 1.7);
+      ctx.fillStyle = `rgba(220, 255, 170, ${a.toFixed(2)})`;
+      ctx.beginPath(); ctx.arc(flies[i][0], flies[i][1], 2.5, 0, 7); ctx.fill();
+    }
     // Lamp light pools.
     for (const lamp of state.lamps) {
       if (lamp.lit) {
@@ -98,6 +111,11 @@ export function createRenderer(canvas) {
     }
     for (const r of state.relicTiles) {
       if (state.relicTaken) continue;
+      const glow = ctx.createRadialGradient(r.x, r.y, 4, r.x, r.y, 34);
+      glow.addColorStop(0, 'rgba(232, 244, 255, 0.35)');
+      glow.addColorStop(1, 'rgba(232, 244, 255, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(r.x, r.y, 34, 0, 7); ctx.fill();
       ctx.fillStyle = '#e8f4ff';
       ctx.beginPath(); ctx.arc(r.x, r.y, 10, 0, 7); ctx.fill();
       ctx.fillStyle = '#3a6ea5';

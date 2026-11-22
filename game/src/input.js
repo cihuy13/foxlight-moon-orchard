@@ -48,10 +48,9 @@ export function createInput(canvas) {
     if (keys.has('w') || keys.has('ArrowUp')) y -= 1;
     if (keys.has('s') || keys.has('ArrowDown')) y += 1;
     if (x !== 0 && y !== 0) { x *= 0.7071; y *= 0.7071; }
-    return { x, y, sneak: keys.has('Shift'), sprint: keys.has('Shift') === false && (keys.has(' ') === false) ? false : false };
+    // Shift sneaks (slow, quiet); walking is the fast, noisy default.
+    return { x, y, sneak: keys.has('Shift') };
   }
-  // Sprint is held with the mouse-free key: hold Shift to sneak, tap Space to
-  // slip, and move fast by default — sprint noise comes from running, not a key.
   function takeActions() {
     const a = actions;
     actions = 0;
