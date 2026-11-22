@@ -40,7 +40,7 @@ function coneDanger(world, x, y) {
   return danger;
 }
 
-function autopilot(world, reckless) {
+function autopilot(world, reckless, brave) {
   const s = world.state;
   const p = s.player;
   let target = null;
@@ -62,7 +62,8 @@ function autopilot(world, reckless) {
     const ny = Math.max(12, Math.min(FIELD.height - 12, p.y + dy * 26));
     const dist = Math.hypot(target.x - nx, target.y - ny);
     const danger = coneDanger(world, nx, ny);
-    const score = -dist - (reckless ? danger * 40 : danger * 420) + (dx === 0 && dy === 0 ? -8 : 0);
+    const weight = reckless ? 40 : brave ? 200 : 420;
+    const score = -dist - danger * weight + (dx === 0 && dy === 0 ? -8 : 0);
     if (score > bestScore) { bestScore = score; best = { x: dx, y: dy }; }
   }
   const sneak = coneDanger(world, p.x, p.y) > 0.15;
@@ -71,17 +72,41 @@ function autopilot(world, reckless) {
 
 export function stageShot(name, world) {
   world.reset();
+  if (name === 'level2') {
+    // A second gameplay moment, from night 2, so the sheet shows the
+    // campaign has more than one level.
+    world.loadLevel(1);
+    for (let i = 0; i < 20 / SAMPLE; i += 1) {
+      const a = autopilot(world, false, false);
+      const ev = world.step(SAMPLE, a.mx, a.my, { sneak: a.sneak });
+      if (ev & EVENT_WIN) return { screen: SCREEN_WIN, best: world.state.score };
+      if (ev & EVENT_OVER) break;
+    }
+    return { screen: world.state.over ? SCREEN_OVER : SCREEN_PLAY, best: world.state.score };
+  }
   if (name !== 'play' && name !== 'end') {
     for (let i = 0; i < START_SECONDS / SAMPLE; i += 1) world.step(SAMPLE, 0, 0, { sneak: false });
     return { screen: SCREEN_TITLE, best: 0 };
   }
   const reckless = name === 'end';
-  const limit = reckless ? END_LIMIT_SECONDS : PLAY_SECONDS;
+  // The cover is the tense moment, not a calm walk: the brave autopilot
+  // cuts cone edges, and the scene freezes just after a warden grows
+  // suspicious with the relic already taken — "?" over the guard, the fox
+  // hidden, the exit open.
+  const brave = name === 'play';
+  const limit = reckless ? END_LIMIT_SECONDS : 30;
+  let tense = 0;
   for (let i = 0; i < limit / SAMPLE; i += 1) {
-    const a = autopilot(world, reckless);
+    const a = autopilot(world, reckless, brave);
     const ev = world.step(SAMPLE, a.mx, a.my, { sneak: a.sneak });
     if (ev & EVENT_WIN) return { screen: SCREEN_WIN, best: world.state.score };
     if (ev & EVENT_OVER) break;
+    if (brave && world.state.relicTaken && world.state.detection >= 35 && world.state.detection < 70) {
+      tense += 1;
+      if (tense > 3) break;
+    } else {
+      tense = 0;
+    }
   }
   const over = world.state.over;
   return { screen: over ? SCREEN_OVER : SCREEN_PLAY, best: world.state.score };
