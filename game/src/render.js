@@ -277,9 +277,10 @@ export function createRenderer(canvas) {
     ctx.font = 'bold 17px sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(state.levelName, 14, 24);
+    const nameWidth = ctx.measureText(state.levelName).width;
     ctx.fillStyle = '#e8dcc0';
     ctx.font = '13px sans-serif';
-    ctx.fillText(`◆  OBJECTIVE: steal the ${state.objective}, then reach the exit`, 360, 24);
+    ctx.fillText(`◆  OBJECTIVE: steal the ${state.objective}, then reach the exit`, 14 + nameWidth + 18, 24);
     ctx.fillStyle = '#8fa3bf';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'right';

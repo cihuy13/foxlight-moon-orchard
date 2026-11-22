@@ -72,10 +72,10 @@ function autopilot(world, reckless, brave) {
 
 export function stageShot(name, world) {
   world.reset();
-  if (name === 'level2') {
-    // A second gameplay moment, from night 2, so the sheet shows the
-    // campaign has more than one level.
-    world.loadLevel(1);
+  if (name === 'level2' || name === 'level3') {
+    // A gameplay moment from night 2 or 3, so the sheet shows the whole
+    // campaign instead of a fail overlay.
+    world.loadLevel(name === 'level2' ? 1 : 2);
     for (let i = 0; i < 20 / SAMPLE; i += 1) {
       const a = autopilot(world, false, false);
       const ev = world.step(SAMPLE, a.mx, a.my, { sneak: a.sneak });
